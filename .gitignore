@@ -1,0 +1,10 @@
+# Gradle / Java generated output
+.gradle/
+build/
+out/
+*.class
+.DS_Store
+.idea/
+*.iml
+
+# Keep gradle/wrapper/gradle-wrapper.jar committed after generating wrapper
