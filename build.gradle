@@ -16,25 +16,42 @@ java {
     }
 }
 
+/*
+ * SECAGENT COMBINED E2E SECURITY TEST ONLY.
+ * This Gradle file intentionally introduces known vulnerable dependencies.
+ * Restore the remediated build.gradle after testing; do not use in production.
+ *
+ * This test-only inline component metadata rule requests Commons Text 1.9 even
+ * after commons-configuration2 is upgraded. A normal Gradle constraint can
+ * select a higher version, which lets us test SecAgent's final fallback.
+ *
+ * It does NOT force or strictly pin a version: those would interfere with
+ * the override validation we want to exercise.
+ */
 dependencies {
-    // ==========================================
-    // SCENARIO 1: DIRECT VULNERABILITY
-    // ==========================================
+    components {
+        // Applies to both initial 2.7 and the upgraded Commons Configuration.
+        withModule('org.apache.commons:commons-configuration2') { details ->
+            details.allVariants {
+                withDependencies {
+                    removeAll { dependency ->
+                        dependency.group == 'org.apache.commons' &&
+                            dependency.name == 'commons-text'
+                    }
+                    add('org.apache.commons:commons-text:1.9')
+                }
+            }
+        }
+    }
 
-    // Intentionally vulnerable Log4j version.
-    implementation 'org.apache.logging.log4j:log4j-core:2.26.1'
+    // SCENARIO A: direct vulnerable dependency.
+    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
 
-    // ==========================================
-    // SCENARIO 2: TRANSITIVE VULNERABILITY
-    // ==========================================
+    // SCENARIO B: vulnerable direct parent, upgrade should improve its graph.
+    implementation 'org.apache.commons:commons-configuration2:2.7'
 
-    // Introduces commons-text:1.8 transitively.
-    // commons-text is NOT declared directly.
-    implementation 'org.apache.commons:commons-configuration2:2.15.1'
-
-    // ==========================================
-    // TEST DEPENDENCIES
-    // ==========================================
+    // SCENARIO C: transitive commons-text:1.9 should survive a parent upgrade.
+    // Do NOT declare commons-text directly or add constraints manually.
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
