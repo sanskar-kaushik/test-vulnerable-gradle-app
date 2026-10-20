@@ -69,3 +69,12 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+
+// SECAGENT-SECURITY-CONSTRAINTS-BEGIN
+dependencies {
+    constraints {
+        implementation('org.apache.commons:commons-text:1.15.0') { because 'SecAgent verified security remediation' }
+    }
+}
+// SECAGENT-SECURITY-CONSTRAINTS-END
