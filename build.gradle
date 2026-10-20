@@ -38,17 +38,17 @@ dependencies {
                         dependency.group == 'org.apache.commons' &&
                             dependency.name == 'commons-text'
                     }
-                    add('org.apache.commons:commons-text:1.9')
+                    add('org.apache.commons:commons-text:1.10.0')
                 }
             }
         }
     }
 
     // SCENARIO A: direct vulnerable dependency.
-    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.25.4'
 
     // SCENARIO B: vulnerable direct parent, upgrade should improve its graph.
-    implementation 'org.apache.commons:commons-configuration2:2.7'
+    implementation 'org.apache.commons:commons-configuration2:2.15.0'
 
     // SCENARIO C: transitive commons-text:1.9 should survive a parent upgrade.
     // Do NOT declare commons-text directly or add constraints manually.
