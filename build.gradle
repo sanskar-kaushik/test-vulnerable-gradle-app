@@ -1,3 +1,5 @@
+import org.gradle.api.artifacts.ComponentMetadataContext
+import org.gradle.api.artifacts.ComponentMetadataRule
 
 plugins {
     id 'java'
@@ -16,25 +18,49 @@ java {
     }
 }
 
+/*
+ * SECAGENT TEST FIXTURE ONLY -- DO NOT MERGE INTO main.
+ *
+ * commons-configuration2:2.15.1 is kept at its patched release. This rule
+ * simulates a legacy/broken metadata constraint in a consuming build by
+ * replacing only its transitive commons-text requirement with 1.9.
+ *
+ * Unlike resolutionStrategy.force(...) or a strictly pinned version, this
+ * DOES NOT prohibit Gradle from selecting a higher version when SecAgent
+ * subsequently inserts a normal dependency constraint.
+ *
+ * This is artificial metadata solely to test the REAL final Gradle
+ * constraints fallback. It does not change published Maven Central metadata.
+ */
+class SecAgentLegacyCommonsTextMetadataRule implements ComponentMetadataRule {
+    void execute(ComponentMetadataContext context) {
+        context.details.allVariants {
+            withDependencies {
+                // Remove the parent's real (patched) version request first.
+                removeAll { dependency ->
+                    dependency.group == 'org.apache.commons' &&
+                        dependency.name == 'commons-text'
+                }
+                // Reintroduce a vulnerable *transitive* version request.
+                add('org.apache.commons:commons-text:1.9')
+            }
+        }
+    }
+}
+
 dependencies {
-    // ==========================================
-    // SCENARIO 1: DIRECT VULNERABILITY
-    // ==========================================
+    components {
+        withModule('org.apache.commons:commons-configuration2', SecAgentLegacyCommonsTextMetadataRule)
+    }
 
-    // Intentionally vulnerable Log4j version.
-    implementation 'org.apache.logging.log4j:log4j-core:2.26.1'
-
-    // ==========================================
-    // SCENARIO 2: TRANSITIVE VULNERABILITY
-    // ==========================================
-
-    // Introduces commons-text:1.8 transitively.
-    // commons-text is NOT declared directly.
+    // Already patched. SecAgent should find no ordinary parent upgrade.
     implementation 'org.apache.commons:commons-configuration2:2.15.1'
 
-    // ==========================================
-    // TEST DEPENDENCIES
-    // ==========================================
+    // Keep existing application Log4j code compiling with patched versions.
+    implementation 'org.apache.logging.log4j:log4j-core:2.26.1'
+
+    // Do NOT add commons-text directly or pre-add any Gradle constraints.
+    // The agent must generate its own security constraint in the fallback.
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
