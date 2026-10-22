@@ -45,10 +45,10 @@ dependencies {
     }
 
     // SCENARIO A: direct vulnerable dependency.
-    implementation 'org.apache.logging.log4j:log4j-core:2.26.1'
+    implementation 'org.apache.logging.log4j:log4j-core:2.14.1'
 
     // SCENARIO B: vulnerable direct parent, upgrade should improve its graph.
-    implementation 'org.apache.commons:commons-configuration2:2.15.1'
+    implementation 'org.apache.commons:commons-configuration2:2.7'
 
     // SCENARIO C: transitive commons-text:1.9 should survive a parent upgrade.
     // Do NOT declare commons-text directly or add constraints manually.
@@ -60,12 +60,3 @@ dependencies {
 test {
     useJUnitPlatform()
 }
-
-
-// SECAGENT-SECURITY-CONSTRAINTS-BEGIN
-dependencies {
-    constraints {
-        implementation('org.apache.commons:commons-text:1.15.0') { because 'SecAgent verified security remediation' }
-    }
-}
-// SECAGENT-SECURITY-CONSTRAINTS-END
