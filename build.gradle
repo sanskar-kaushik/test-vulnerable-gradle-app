@@ -38,7 +38,7 @@ dependencies {
                         dependency.group == 'org.apache.commons' &&
                             dependency.name == 'commons-text'
                     }
-                    add('org.apache.commons:commons-text:1.9')
+                    add('org.apache.commons:commons-text:1.10.0')
                 }
             }
         }
